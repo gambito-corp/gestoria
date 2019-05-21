@@ -17,18 +17,23 @@ class ContactoController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index() {
-        $secciones = seccion::all();
-        $categorias = categoria::all();
-        $blogs = blog::all();
-        $contactos = contacto::all();
-        $config = config::find('1');
-        return view('contacto.gestion', [
-            'secciones' => $secciones,
-            'categorias' => $categorias,
-            'blogs' => $blogs,
-            'contactos' => $contactos,
-            'con' => $config
-        ]);
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin' || \Auth::user()->role == 'admin' || \Auth::user()->role == 'socio')){
+
+            $secciones = seccion::all();
+            $categorias = categoria::all();
+            $blogs = blog::all();
+            $contactos = contacto::all();
+            $config = config::find('1');
+            return view('contacto.gestion', [
+                'secciones' => $secciones,
+                'categorias' => $categorias,
+                'blogs' => $blogs,
+                'contactos' => $contactos,
+                'con' => $config
+            ]);
+        }else{
+            return redirect()->route('index');
+        }
     }
 
     /**
@@ -56,6 +61,8 @@ class ContactoController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
+    
+
         //validar datos
         $validate = $this->validate($request, [
             'nombre' => 'required',
@@ -83,8 +90,8 @@ class ContactoController extends Controller {
         //guardar
         $save = $contacto->save();
         //redirigir
+    
     }
-
     /**
      * Show the form for editing the specified resource.
      *
@@ -92,18 +99,22 @@ class ContactoController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function edit($id) {
-        $secciones = seccion::all();
-        $categorias = categoria::all();
-        $blogs = blog::all();
-        $contacto = contacto::find($id);
-        $config = App\config::find('1');
-        return view('contacto.editar', [
-            'secciones' => $secciones,
-            'categorias' => $categorias,
-            'blogs' => $blogs,
-            'contacto' => $contacto,
-            'con' => $config
-        ]);
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin' || \Auth::user()->role == 'admin' || \Auth::user()->role == 'socio')){
+            $secciones = seccion::all();
+            $categorias = categoria::all();
+            $blogs = blog::all();
+            $contacto = contacto::find($id);
+            $config = config::find('1');
+            return view('contacto.editar', [
+                'secciones' => $secciones,
+                'categorias' => $categorias,
+                'blogs' => $blogs,
+                'contacto' => $contacto,
+                'con' => $config
+            ]);
+        }else{
+            return redirect()->route('index');
+        }
     }
 
     /**
@@ -114,41 +125,46 @@ class ContactoController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request) {
-        //pasar a variables
-        $id = $request->input('id');
-        $nombre = $request->input('nombre');
-        $apellido = $request->input('apellido');
-        $email = $request->input('email');
-        $telefono = $request->input('telefono');
-        $asunto = $request->input('area');
-        $consulta = $request->input('mensaje');
-        $solucion = $request->input('solucion');
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin' || \Auth::user()->role == 'admin' || \Auth::user()->role == 'socio')){
+        
+            //pasar a variables
+            $id = $request->input('id');
+            $nombre = $request->input('nombre');
+            $apellido = $request->input('apellido');
+            $email = $request->input('email');
+            $telefono = $request->input('telefono');
+            $asunto = $request->input('area');
+            $consulta = $request->input('mensaje');
+            $solucion = $request->input('solucion');
 
-        //encontrar objeto
-        $contacto = contacto::find($id);
-        $fecha_A = date('d-m-Y');
-        $fecha = date('d-m-Y', strtotime($fecha_A . "+ 1 week"));
+            //encontrar objeto
+            $contacto = contacto::find($id);
+            $fecha_A = date('d-m-Y');
+            $fecha = date('d-m-Y', strtotime($fecha_A . "+ 1 week"));
 
-        //setearlo
-        $contacto->nombre = $nombre;
-        $contacto->apellido = $apellido;
-        $contacto->correo = $email;
-        $contacto->asunto = $asunto;
-        $contacto->telefono = $telefono;
-        $contacto->mensaje = $consulta;
-        $contacto->solucion = $solucion;
-        $contacto->rellamar_en = $fecha;
-//guardar
-        $save = $contacto->update();
-        //redirigir
-        if ($save) {
-            //save correcto
-            return redirect()->route('contacto.gestion')
-                            ->with(['message' => 'Consulta actualizada con exito']);
-        } else {
-            //save incorrecto
-            return redirect()->route('contacto.gestion')
-                            ->with(['message' => 'Consulta no actualizada, Completa todos los datos obligatorios porfavor']);
+            //setearlo
+            $contacto->nombre = $nombre;
+            $contacto->apellido = $apellido;
+            $contacto->correo = $email;
+            $contacto->asunto = $asunto;
+            $contacto->telefono = $telefono;
+            $contacto->mensaje = $consulta;
+            $contacto->solucion = $solucion;
+            $contacto->rellamar_en = $fecha;
+    //guardar
+            $save = $contacto->update();
+            //redirigir
+            if ($save) {
+                //save correcto
+                return redirect()->route('contacto.gestion')
+                                ->with(['message' => 'Consulta actualizada con exito']);
+            } else {
+                //save incorrecto
+                return redirect()->route('contacto.gestion')
+                                ->with(['message' => 'Consulta no actualizada, Completa todos los datos obligatorios porfavor']);
+            }
+        }else{
+            return redirect()->route('index');
         }
     }
 
@@ -159,17 +175,22 @@ class ContactoController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        $contacto = contacto::find($id);
-        $save = $contacto->delete();
-        if ($save) {
-            //save correcto
-            return redirect()->route('contacto.gestion')
-                            ->with(['message' => 'Consulta eliminada con exito']);
-        } else {
-            //save incorrecto
-            return redirect()->route('contacto.gestion')
-                            ->with(['message' => 'Consulta no eliminada']);
-        }
-    }
 
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin' || \Auth::user()->role == 'admin' || \Auth::user()->role == 'socio')){
+
+            $contacto = contacto::find($id);
+            $save = $contacto->delete();
+            if ($save) {
+            //save correcto
+                return redirect()->route('contacto.gestion')
+                            ->with(['message' => 'Consulta eliminada con exito']);
+            } else {
+            //save incorrecto
+                return redirect()->route('contacto.gestion')
+                            ->with(['message' => 'Consulta no eliminada']);
+            }
+        }else{
+            return redirect()->route('index');
+        }        
+    }
 }

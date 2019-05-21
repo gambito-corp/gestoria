@@ -20,12 +20,14 @@ class seccionesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function gestion() {
-        $secciones = seccion::all();
-
-
-        return view('secciones.gestion', [
-            'secciones' => $secciones
-        ]);
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin'||\Auth::user()->role == 'admin'||\Auth::user()->role == 'socio')){
+            $secciones = seccion::all();
+            return view('secciones.gestion', [
+                'secciones' => $secciones
+            ]);
+        }else{
+            return redirect()->route('index');
+        }
     }
 
     /**
@@ -53,7 +55,11 @@ class seccionesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function create() {
-        return view('secciones.crear');
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin'||\Auth::user()->role == 'admin'||\Auth::user()->role == 'socio')){            
+            return view('secciones.crear');
+        }else{
+            return redirect()->route('index');
+        }
     }
 
     /**
@@ -63,52 +69,56 @@ class seccionesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin'||\Auth::user()->role == 'admin'||\Auth::user()->role == 'socio')){            
+            //validacion
+            $validate = $this->validate($request, [
+                'titulo' => 'required',
+                'imagenCentral' => 'required|image',
+                'descripcionC' => 'required',
+                'descripcionL' => 'required',
+                'icono' => 'required',
+                'metadesc' => 'required',
+                'metatitle' => 'required',
+                'metakey' => 'required'
+            ]);
 
-        //validacion
-        $validate = $this->validate($request, [
-            'titulo' => 'required',
-            'imagenCentral' => 'required|image',
-            'descripcionC' => 'required',
-            'descripcionL' => 'required',
-            'icono' => 'required',
-            'metadesc' => 'required',
-            'metatitle' => 'required',
-            'metakey' => 'required'
-        ]);
-
-        //recojo los datos
-        $titulo = $request->input('titulo');
-        $imagenCentral = $request->file('imagenCentral');
-        $descripcionC = $request->input('descripcionC');
-        $descripcionL = $request->input('descripcionL');
-        $icono = $request->input('icono');
-        $metadesc = $request->input('metadesc');
-        $metatitle = $request->input('metatitle');
-        $metakey = $request->input('metakey');
-        //setear objeto
-        $user = \Auth::user();
-        $seccion = new seccion();
-        $seccion->user_id = $user->id;
-        $seccion->titulo = $titulo;
-        if ($imagenCentral) {
-            //poner nombre unico
-            $imagenC_name = time() . $imagenCentral->getClientOriginalName();
-            //guardamos en la carpeta users de storage/app/users
-            Storage::disk('secciones')->put($imagenC_name, File::get($imagenCentral));
-            //seteo el objeto
-            $seccion->imagenCentral = $imagenC_name;
+            //recojo los datos
+            $titulo = $request->input('titulo');
+            $imagenCentral = $request->file('imagenCentral');
+            $descripcionC = $request->input('descripcionC');
+            $descripcionL = $request->input('descripcionL');
+            $icono = $request->input('icono');
+            $metadesc = $request->input('metadesc');
+            $metatitle = $request->input('metatitle');
+            $metakey = $request->input('metakey');
+            //setear objeto
+            $user = \Auth::user();
+            $seccion = new seccion();
+            $seccion->user_id = $user->id;
+            $seccion->titulo = $titulo;
+            if ($imagenCentral) {
+                //poner nombre unico
+                $imagenC_name = time() . $imagenCentral->getClientOriginalName();
+                //guardamos en la carpeta users de storage/app/users
+                Storage::disk('secciones')->put($imagenC_name, File::get($imagenCentral));
+                //seteo el objeto
+                $seccion->imagenCentral = $imagenC_name;
+            }
+            $seccion->descripcionC = $descripcionC;
+            $seccion->descripcionL = $descripcionL;
+            $seccion->icono = $icono;
+            $seccion->metadesc = $metadesc;
+            $seccion->metatitle = $metatitle;
+            $seccion->metakey = $metakey;
+            // subir datos
+            $seccion->save();
+            return redirect()->route('secciones.gestion')->with([
+                        'message' => 'todo ok'
+            ]);
+        }else{
+            return redirect()->route('index');
         }
-        $seccion->descripcionC = $descripcionC;
-        $seccion->descripcionL = $descripcionL;
-        $seccion->icono = $icono;
-        $seccion->metadesc = $metadesc;
-        $seccion->metatitle = $metatitle;
-        $seccion->metakey = $metakey;
-        // subir datos
-        $seccion->save();
-        return redirect()->route('secciones.gestion')->with([
-                    'message' => 'todo ok'
-        ]);
+        
     }
 
     public function getImagen($filename) {
@@ -144,11 +154,18 @@ class seccionesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function edit($id) {
-        $seccion = seccion::find($id);
 
-        return view('secciones.editar', [
-            'seccion' => $seccion
-        ]);
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin'||\Auth::user()->role == 'admin'||\Auth::user()->role == 'socio')){            
+            $seccion = seccion::find($id);
+
+            return view('secciones.editar', [
+                'seccion' => $seccion
+            ]);
+        }else{
+            return redirect()->route('index');
+        }
+        
+        
     }
 
     /**
@@ -159,56 +176,63 @@ class seccionesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request) {
-        //valido datos
-        $validate = $this->validate($request, [
-            'imagenCentral' => 'image'
-        ]);
-        //recojo datos
-        $id = $request->input('id');
-        $titulo = $request->input('titulo');
-        $imagenCentral = $request->file('imagenCentral');
-        $descripcionC = $request->input('descripcionC');
-        $descripcionL = $request->input('descripcionL');
-        $icono = $request->input('icono');
-        $metadesc = $request->input('metadesc');
-        $metatitle = $request->input('metatitle');
-        $metakey = $request->input('metakey');
-//buscar mi objeto en la base de datos
-        $seccion = seccion::find($id);
+
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin'||\Auth::user()->role == 'admin'||\Auth::user()->role == 'socio')){            
+            //valido datos
+            $validate = $this->validate($request, [
+                'imagenCentral' => 'image'
+            ]);
+            //recojo datos
+            $id = $request->input('id');
+            $titulo = $request->input('titulo');
+            $imagenCentral = $request->file('imagenCentral');
+            $descripcionC = $request->input('descripcionC');
+            $descripcionL = $request->input('descripcionL');
+            $icono = $request->input('icono');
+            $metadesc = $request->input('metadesc');
+            $metatitle = $request->input('metatitle');
+            $metakey = $request->input('metakey');
+            //buscar mi objeto en la base de datos
+            $seccion = seccion::find($id);
 
 
-        //seteo objeto
-        $user = \Auth::user();
+            //seteo objeto
+            $user = \Auth::user();
 
-        $seccion->user_id = $user->id;
-        $seccion->titulo = $titulo;
+            $seccion->user_id = $user->id;
+            $seccion->titulo = $titulo;
 
-        if ($imagenCentral) {
-            //poner nombre unico
-            $imagenC_name = time() . $imagenCentral->getClientOriginalName();
-            //guardamos en la carpeta users de storage/app/users
-            Storage::disk('secciones')->put($imagenC_name, File::get($imagenCentral));
-            //seteo el objeto
-            $seccion->imagenCentral = $imagenC_name;
+            if ($imagenCentral) {
+                //poner nombre unico
+                $imagenC_name = time() . $imagenCentral->getClientOriginalName();
+                //guardamos en la carpeta users de storage/app/users
+                Storage::disk('secciones')->put($imagenC_name, File::get($imagenCentral));
+                //seteo el objeto
+                $seccion->imagenCentral = $imagenC_name;
+            }
+            $seccion->descripcionC = $descripcionC;
+            $seccion->descripcionL = $descripcionL;
+            $seccion->icono = $icono;
+            $seccion->metadesc = $metadesc;
+            $seccion->metatitle = $metatitle;
+            $seccion->metakey = $metakey;
+            //guardo objeto
+
+            $save = $seccion->update();
+            //devuelvo vista
+
+            if ($save) {
+                return redirect()->route('secciones.gestion')
+                                ->with(['message' => 'Seccion Actualizada con exito']);
+            } else {
+                return redirect()->route('secciones.gestion')
+                                ->with(['message' => 'no actualizo']);
+            }
+        }else{
+            return redirect()->route('index');
         }
-        $seccion->descripcionC = $descripcionC;
-        $seccion->descripcionL = $descripcionL;
-        $seccion->icono = $icono;
-        $seccion->metadesc = $metadesc;
-        $seccion->metatitle = $metatitle;
-        $seccion->metakey = $metakey;
-        //guardo objeto
+        
 
-        $save = $seccion->update();
-        //devuelvo vista
-
-        if ($save) {
-            return redirect()->route('secciones.gestion')
-                            ->with(['message' => 'Seccion Actualizada con exito']);
-        } else {
-            return redirect()->route('secciones.gestion')
-                            ->with(['message' => 'no actualizo']);
-        }
     }
 
     /**
@@ -218,13 +242,19 @@ class seccionesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        $seccion = seccion::find($id);
-        //eliminar Storage
-        Storage::disk('secciones')->delete($seccion->imagenCentral);
-        //eliminar registro
-        $seccion->delete();
-        $message = array('message' => 'Seccion eliminada');
-        return redirect()->route('secciones.gestion')->with($message);
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin'||\Auth::user()->role == 'admin'||\Auth::user()->role == 'socio')){            
+            $seccion = seccion::find($id);
+            //eliminar Storage
+            Storage::disk('secciones')->delete($seccion->imagenCentral);
+            //eliminar registro
+            $seccion->delete();
+            $message = array('message' => 'Seccion eliminada');
+            return redirect()->route('secciones.gestion')->with($message);
+        }else{
+            return redirect()->route('index');
+        }
+        
+
     }
 
 }

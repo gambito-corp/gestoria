@@ -43,7 +43,7 @@
                             <label for="descripcionC" class="col-md-3 col-form-label text-md-right">{{ __('descripcionC') }}</label>
 
                             <div class="col-md-6">
-                                <input id="descripcionC" type="text" class="form-control{{ $errors->has('descripcionC') ? ' is-invalid' : '' }}" name="descripcionC" value="}">
+                                <input id="descripcionC" type="text" class="form-control{{ $errors->has('descripcionC') ? ' is-invalid' : '' }}" name="descripcionC" value="">
 
                                 @if ($errors->has('descripcionC'))
                                 <span class="invalid-feedback" role="alert">
@@ -56,7 +56,7 @@
                             <label for="descripcionL" class="col-md-3 col-form-label text-md-right">{{ __('descripcionL') }}</label>
 
                             <div class="col-md-6">
-                                <textarea type="text" id="descripcionL" name="descripcionL" class="form-control{{ $errors->has('descripcionL') ? ' is-invalid' : '' }}">}</textarea>
+                                <textarea type="text" id="descripcionL" name="descripcionL" class="form-control{{ $errors->has('descripcionL') ? ' is-invalid' : '' }}"></textarea>
 
                                 @if ($errors->has('descripcionL'))
                                 <span class="invalid-feedback" role="alert">

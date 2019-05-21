@@ -30,7 +30,7 @@ Route::get('/', function () {
         'con' => $config
     ]);
 })->name('index');
-route::get('/somos', 'HomeController@somos')->name('inicio.somos');
+// route::get('/somos', 'HomeController@somos')->name('inicio.somos');
 
 
 Auth::routes();

@@ -1,4 +1,4 @@
-<?php
+3<?php
 
 namespace App\Http\Controllers;
 
@@ -36,31 +36,37 @@ class comentarioController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
-        //validacion
-        $validate = $this->validate($request, [
-            'blog_id' => 'integer|required',
-            'comentario' => 'required'
-        ]);
-        //recoger datos
-
-        $user = \Auth::user();
-        $blog_id = $request->input('blog_id');
-        $coment = $request->input('comentario');
-        //asigno los valores a guardar
-        $comentario = new comentario();
-        $comentario->user_id = $user->id;
-        $comentario->blog_id = $blog_id;
-        $comentario->contenido = $coment;
-        //guardar
-        $save = $comentario->save();
-        //redirigir
-        if ($save) {
-            return redirect()->route('blog.ver', ['id' => $blog_id])->with([
-                        'message' => $user->name . ' has Publicado un comentario'
+        if(\Auth::user()){
+            //validacion
+            $validate = $this->validate($request, [
+                'blog_id' => 'integer|required',
+                'comentario' => 'required'
             ]);
-        } else {
+            //recoger datos
+
+            $user = \Auth::user();
+            $blog_id = $request->input('blog_id');
+            $coment = $request->input('comentario');
+            //asigno los valores a guardar
+            $comentario = new comentario();
+            $comentario->user_id = $user->id;
+            $comentario->blog_id = $blog_id;
+            $comentario->contenido = $coment;
+            //guardar
+            $save = $comentario->save();
+            //redirigir
+            if ($save) {
+                return redirect()->route('blog.ver', ['id' => $blog_id])->with([
+                            'message' => $user->name . ' has Publicado un comentario'
+                ]);
+            } else {
+                return redirect()->route('blog.ver', ['id' => $blog_id])->with([
+                            'message' => $user->name . ' Hubo un fallo en los comentarios, intentalo de nuevo'
+                ]);
+            }
+        }else{
             return redirect()->route('blog.ver', ['id' => $blog_id])->with([
-                        'message' => $user->name . ' Hubo un fallo en los comentarios, intentalo de nuevo'
+                'message' => $user->name . ' Registrate o Logueate para Publicar un comentario'
             ]);
         }
     }

@@ -10,7 +10,9 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
 
         <!-- Scripts -->
+        <script src="{{ asset('js/app.js') }}" defer></script>
         <script src="{{ asset('js/boostrap.js') }}"></script>
+        <script src="{{ asset('js/datatables.js') }}" defer></script>
         <script src="https://cloud.tinymce.com/stable/tinymce.min.js"></script>
         <script>tinymce.init({selector: 'textarea'});</script>
 
@@ -23,6 +25,7 @@
         <!-- Styles -->
         <link href="{{ asset('css/app.css') }}" rel="stylesheet">
         <link href="{{ asset('css/estilos.css') }}" rel="stylesheet">
+        <link rel="stylesheet" href="{{asset('css/datatables.css')}}">
         <link href="{{ asset('css/icons.css') }}" rel="stylesheet">
         <!-- Scripts -->
 
@@ -53,43 +56,41 @@
                             </li>
                             @if (Route::has('register'))
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
+                                <a class="nav-link" href="{{ route('register') }}">{{ __('Registro') }}</a>
                             </li>
                             @endif
                             @else
-                            <li class="nav-item"><a class="nav-link" href="{{route('index')}}">Inicio</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{Route('secciones.crear')}}">Crear seccion</a></li>
-
-                            <li class="nav-item"><a class="nav-link" href="">comunicacion directa</a></li>
-                            <li>&nbsp;</li>
+                            <li class="nav-item"><a class="nav-link" href="{{route('index')}}">Inicio</a></li>                                                    
                             <li class="nav-item dropdown">
 
-
-
-
-                            </li>
-                            <a class="dropdown-item" href="">
-                                Perfil
-                            </a>
-                            <a class="dropdown-item" href="{{route('config')}}">
-                                Configuracion
-                            </a>
-                            <a class="dropdown-item" href="{{ route('logout') }}"
-                               onclick="event.preventDefault();
-                                       document.getElementById('logout-form').submit();">
-                                {{ __('Logout') }}
-                            </a>
-
-
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                @csrf
-                            </form>
-                            <a id="" class="nav-link " href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                 @if(Auth::user()->imagen)
-                                <img src="{{Route('user.imagen', ['filename'=>Auth::user()->imagen])}}" alt="" class="img-thumbnail avatar"/>
-                                @endif
-                                {{ Auth::user()->name }} <span class="caret"></span>
-                            </a>
+                                            <img src="{{Route('user.imagen', ['filename'=>Auth::user()->imagen])}}" alt="" class="img-thumbnail avatar"/>
+                                            @endif
+                                    {{ Auth::user()->name }} <span class="caret"></span>
+                                </a>
+
+                                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                                    @if(Auth::user() && (Auth::user()->role == 'Administrador' || Auth::user()->role == 'SuperAdmin'))
+                                    <a class="dropdown-item" href="{{ route('usuarios.gestion') }}">
+                                        Gestion de Usuarios
+                                    </a>
+                                    @endif
+                                    <a class="dropdown-item" href="{{ route('config') }}">
+                                        Editar mi perfil de usuario
+                                    </a>                        
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="{{ route('logout') }}"
+                                    onclick="event.preventDefault();
+                                            document.getElementById('logout-form').submit();">
+                                        {{ __('Logout') }}
+                                    </a>
+
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                        @csrf
+                                    </form>
+                                </div>
+                            </li>
                             @endguest
                         </ul>
                     </div>

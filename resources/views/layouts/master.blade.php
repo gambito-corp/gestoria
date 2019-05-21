@@ -52,14 +52,23 @@
                         <div class="row clearfix" >
 
                             <div class="info" >
-
-                                <i class="icon-power-off" ></i>
-                                <a href="">Desconectar</a>
-
+                                @Auth
+                                <i class="icon-power-off" ></i>                                
+                                <a class="dropdown-item" href="{{ route('logout') }}"
+                                       onclick="event.preventDefault();
+                                               document.getElementById('logout-form').submit();">
+                                        {{ __('Logout') }}
+                                    </a>
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                        @csrf
+                                    </form>
+                                @endAuth
+                                @guest
                                 <i class="icon-user" ></i>
                                 <a href="{{action('HomeController@index')}}">Log-In</a>
                                 <i class="icon-user" ></i>
                                 <a href="{{ route('register') }}">registro</a>
+                                @endguest
                                 <i class="icon-envelope-alt" ></i>
                                 <a href="mailto:{{$con->correo2}}">{{$con->correo2}}</a>
                                 <i class="icon-phone"></i> {{$con->telefono1}}
@@ -102,7 +111,7 @@
                                 <ul id="menu-main-menu" class="sf-menu">
 
                                     <li class="menu-item"><a href="{{route('index')}}">inicio</a></li>
-                                    <li class="menu-item"><a href="index/nosotros" >Nosotros</a></li>
+                                    <!-- <li class="menu-item"><a href="index/nosotros" >Nosotros</a></li> -->
                                     <li class="menu-item"><a href="{{route('secciones.index')}}">Areas Legales</a>
                                         <ul class="sub-menu">
                                             @if(Auth::user() && (Auth::user()->role == 'admin' || Auth::user()->role == 'Superadmin' || Auth::user()->role == 'socio'))

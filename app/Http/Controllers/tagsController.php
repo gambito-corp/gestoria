@@ -18,11 +18,16 @@ class tagsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index() {
-        $tags = tag::all();
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin'||\Auth::user()->role == 'admin'||\Auth::user()->role == 'socio'||\Auth::user()->role == 'editor')){
+            $tags = tag::all();
 
-        return view('tag.gestion', [
-            'tags' => $tags
-        ]);
+            return view('tag.gestion', [
+                'tags' => $tags
+            ]);
+        }else{
+            return redirect()->route('index');
+        }
+        
     }
 
     /**
@@ -31,7 +36,12 @@ class tagsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function create() {
-        return view('tag.crear');
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin'||\Auth::user()->role == 'admin'||\Auth::user()->role == 'socio'||\Auth::user()->role == 'editor')){
+            return view('tag.crear');
+        }else{
+            return redirect()->route('index');
+        }
+        
     }
 
     /**
@@ -41,30 +51,36 @@ class tagsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
-        //validacion
-        $validate = $this->validate($request, [
-            'titulo' => 'required',
-        ]);
 
-        //recojo los datos
-        $titulo = $request->input('titulo');
-
-        //setear objeto
-        $tag = new tag();
-
-        $tag->titulo = $titulo;
-
-        // subir datos
-        $save = $tag->save();
-        if ($save) {
-            return redirect()->route('etiquetas.gestion')->with([
-                        'message' => 'Etiqueta creada exitosamente'
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin'||\Auth::user()->role == 'admin'||\Auth::user()->role == 'socio'||\Auth::user()->role == 'editor')){
+                //validacion
+            $validate = $this->validate($request, [
+                'titulo' => 'required',
             ]);
-        } else {
-            return redirect()->route('etiquetas.gestion')->with([
-                        'message' => 'fallo al crear la etiqueta'
-            ]);
+
+            //recojo los datos
+            $titulo = $request->input('titulo');
+
+            //setear objeto
+            $tag = new tag();
+
+            $tag->titulo = $titulo;
+
+            // subir datos
+            $save = $tag->save();
+            if ($save) {
+                return redirect()->route('etiquetas.gestion')->with([
+                            'message' => 'Etiqueta creada exitosamente'
+                ]);
+            } else {
+                return redirect()->route('etiquetas.gestion')->with([
+                            'message' => 'fallo al crear la etiqueta'
+                ]);
+            }
+        }else{
+            return redirect()->route('index');
         }
+        
     }
 
     /**
@@ -87,10 +103,16 @@ class tagsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function edit($id) {
-        $tag = tag::find($id);
-        return view('tag.editar', [
-            'tag' => $tag
-        ]);
+
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin'||\Auth::user()->role == 'admin'||\Auth::user()->role == 'socio'||\Auth::user()->role == 'editor')){
+            $tag = tag::find($id);
+            return view('tag.editar', [
+                'tag' => $tag
+            ]);
+        }else{
+            return redirect()->route('index');
+        }
+        
     }
 
     /**
@@ -101,30 +123,36 @@ class tagsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id) {
-        //validacion
-        $validate = $this->validate($request, [
-            'titulo' => 'required',
-        ]);
 
-        //recojo los datos
-        $titulo = $request->input('titulo');
-        // busco objeto en la BD
-        $tag = tag::find($id);
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin'||\Auth::user()->role == 'admin'||\Auth::user()->role == 'socio'||\Auth::user()->role == 'editor')){
+            //validacion
+            $validate = $this->validate($request, [
+                'titulo' => 'required',
+            ]);
 
-        //setear objeto
-        $tag->titulo = $titulo;
-        //guardo Objeto
-        $save = $tag->update();
-        //compruebo y devuelvo vista
-        if ($save) {
-            return redirect()->route('etiquetas.gestion')->with([
-                        'message' => 'Etiqueta actualizada exitosamente'
-            ]);
-        } else {
-            return redirect()->route('etiquetas.gestion')->with([
-                        'message' => 'fallo al actualizar la etiqueta'
-            ]);
+            //recojo los datos
+            $titulo = $request->input('titulo');
+            // busco objeto en la BD
+            $tag = tag::find($id);
+
+            //setear objeto
+            $tag->titulo = $titulo;
+            //guardo Objeto
+            $save = $tag->update();
+            //compruebo y devuelvo vista
+            if ($save) {
+                return redirect()->route('etiquetas.gestion')->with([
+                            'message' => 'Etiqueta actualizada exitosamente'
+                ]);
+            } else {
+                return redirect()->route('etiquetas.gestion')->with([
+                            'message' => 'fallo al actualizar la etiqueta'
+                ]);
+            }
+        }else{
+            return redirect()->route('index');
         }
+       
     }
 
     /**
@@ -134,20 +162,25 @@ class tagsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        //busco objeto
-        $tag = tag::find($id);
-        //ejecuto eliminar
-        $save = $tag->delete();
-        //redirigo confirmacion
-        if ($save) {
-            return redirect()->route('etiquetas.gestion')->with([
-                        'message' => 'Etiqueta Eliminada exitosamente'
-            ]);
-        } else {
-            return redirect()->route('etiquetas.gestion')->with([
-                        'message' => 'fallo al eliminar la etiqueta'
-            ]);
+        if(\Auth::user() && (\Auth::user()->role == 'Superadmin'||\Auth::user()->role == 'admin'||\Auth::user()->role == 'socio'||\Auth::user()->role == 'editor')){
+            //busco objeto
+            $tag = tag::find($id);
+            //ejecuto eliminar
+            $save = $tag->delete();
+            //redirigo confirmacion
+            if ($save) {
+                return redirect()->route('etiquetas.gestion')->with([
+                            'message' => 'Etiqueta Eliminada exitosamente'
+                ]);
+            } else {
+                return redirect()->route('etiquetas.gestion')->with([
+                            'message' => 'fallo al eliminar la etiqueta'
+                ]);
+            }
+        }else{
+            return redirect()->route('index');
         }
+        
     }
 
 }

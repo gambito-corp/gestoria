@@ -20,11 +20,16 @@ class CategoriaController extends Controller {
      *
      * @return \Illuminate\Http\Response
      */
-    public function gestion() {
-        $categorias = categoria::all();
-        return view('categoria.gestion', [
-            'categorias' => $categorias
-        ]);
+    public function gestion() {        
+        if(\Auth::user() && (\Auth::user()->role == 'socio' || \Auth::user()->role == 'admin' || \Auth::user()->role == 'Superadmin')){
+
+            $categorias = categoria::all();
+            return view('categoria.gestion', [
+                'categorias' => $categorias
+            ]);
+        }else{
+            return redirect()->route('index');
+        }
     }
 
     /**
@@ -49,7 +54,12 @@ class CategoriaController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function create() {
-        return view('categoria.crear');
+        if(\Auth::user() && (\Auth::user()->role == 'editor' || \Auth::user()->role == 'socio' || \Auth::user()->role == 'admin' || \Auth::user()->role == 'Superadmin')){
+
+            return view('categoria.crear');
+        }else{
+            return redirect()->route('index');
+        }
     }
 
     /**
@@ -59,55 +69,60 @@ class CategoriaController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
-        //validar datos
-        $validate = $this->validate($request, [
-            'titulo' => 'required',
-            'descripcionC' => 'required',
-            'descripcionL' => 'required',
-            'imagen' => 'required|image',
-            'metadesc' => 'required',
-            'metatitle' => 'required',
-            'metakey' => 'required'
-        ]);
-        //recoger los datos
-        $titulo = $request->input('titulo');
-        $imagen = $request->file('imagen');
-        $descripcionC = $request->input('descripcionC');
-        $descripcionL = $request->input('descripcionL');
-        $metadesc = $request->input('metadesc');
-        $metatitle = $request->input('metatitle');
-        $metakey = $request->input('metakey');
-        //cargar usuario
-        $user = \Auth::user();
-        $categoria = new categoria();
-        //recibir imagen
-        if ($imagen) {
-            //poner nombre unico
-            $imagen_name = time() . $imagen->getClientOriginalName();
-            //guardamos en la carpeta users de storage/app/users
-            Storage::disk('categorias')->put($imagen_name, File::get($imagen));
-            //seteo el objeto
-            $categoria->imagen = $imagen_name;
-        }
-        //setear objeto
-        $categoria->user_id = $user->id;
-        $categoria->titulo = $titulo;
-        $categoria->descripcionC = $descripcionC;
-        $categoria->descripcionL = $descripcionL;
-        $categoria->metadesc = $metadesc;
-        $categoria->metatitle = $metatitle;
-        $categoria->metakey = $metakey;
-        //guardar
-        $save = $categoria->save();
-        //redirigir
-        if ($save) {
-            return redirect()->route('categoria.gestion')->with([
-                        'message' => 'categoria guardada exitosamente'
+        if(\Auth::user() && (\Auth::user()->role == 'editor' || \Auth::user()->role == 'socio' || \Auth::user()->role == 'admin' || \Auth::user()->role == 'Superadmin')){
+
+            //validar datos
+            $validate = $this->validate($request, [
+                'titulo' => 'required',
+                'descripcionC' => 'required',
+                'descripcionL' => 'required',
+                'imagen' => 'required|image',
+                'metadesc' => 'required',
+                'metatitle' => 'required',
+                'metakey' => 'required'
             ]);
-        } else {
-            return redirect()->route('categoria.gestion')->with([
-                        'message' => 'fallo al guardar categoria'
-            ]);
+            //recoger los datos
+            $titulo = $request->input('titulo');
+            $imagen = $request->file('imagen');
+            $descripcionC = $request->input('descripcionC');
+            $descripcionL = $request->input('descripcionL');
+            $metadesc = $request->input('metadesc');
+            $metatitle = $request->input('metatitle');
+            $metakey = $request->input('metakey');
+            //cargar usuario
+            $user = \Auth::user();
+            $categoria = new categoria();
+            //recibir imagen
+            if ($imagen) {
+                //poner nombre unico
+                $imagen_name = time() . $imagen->getClientOriginalName();
+                //guardamos en la carpeta users de storage/app/users
+                Storage::disk('categorias')->put($imagen_name, File::get($imagen));
+                //seteo el objeto
+                $categoria->imagen = $imagen_name;
+            }
+            //setear objeto
+            $categoria->user_id = $user->id;
+            $categoria->titulo = $titulo;
+            $categoria->descripcionC = $descripcionC;
+            $categoria->descripcionL = $descripcionL;
+            $categoria->metadesc = $metadesc;
+            $categoria->metatitle = $metatitle;
+            $categoria->metakey = $metakey;
+            //guardar
+            $save = $categoria->save();
+            //redirigir
+            if ($save) {
+                return redirect()->route('categoria.gestion')->with([
+                            'message' => 'categoria guardada exitosamente'
+                ]);
+            } else {
+                return redirect()->route('categoria.gestion')->with([
+                            'message' => 'fallo al guardar categoria'
+                ]);
+            }
+        }else{
+            return redirect()->route('index');
         }
     }
 
@@ -158,11 +173,16 @@ class CategoriaController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function edit($id) {
-        $categoria = categoria::find($id);
+        if(\Auth::user() && (\Auth::user()->role == 'editor' || \Auth::user()->role == 'socio' || \Auth::user()->role == 'admin' || \Auth::user()->role == 'Superadmin')){
 
-        return view('categoria.editar', [
-            'categoria' => $categoria
-        ]);
+            $categoria = categoria::find($id);
+
+            return view('categoria.editar', [
+                'categoria' => $categoria
+            ]);
+        }else{
+            return redirect()->route('index');
+        }
     }
 
     /**
@@ -173,52 +193,58 @@ class CategoriaController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request) {
-        $validate = $this->validate($request, [
-            'imagen' => 'image'
-        ]);
-        //recoger los datos
-        $id = $request->input('id');
-        $titulo = $request->input('titulo');
-        $imagen = $request->file('imagen');
-        $descripcionC = $request->input('descripcionC');
-        $descripcionL = $request->input('descripcionL');
-        $metadesc = $request->input('metadesc');
-        $metatitle = $request->input('metatitle');
-        $metakey = $request->input('metakey');
-        //cargo objeto de la BD
-        $categoria = categoria::find($id);
-        //recibir imagen
-        if ($imagen) {
-            //poner nombre unico
-            $imagen_name = time() . $imagen->getClientOriginalName();
-            //guardamos en la carpeta users de storage/app/users
-            Storage::disk('categorias')->put($imagen_name, File::get($imagen));
-            //seteo el objeto
-            $categoria->imagen = $imagen_name;
-        }
+        if(\Auth::user() && (\Auth::user()->role == 'editor' || \Auth::user()->role == 'socio' || \Auth::user()->role == 'admin' || \Auth::user()->role == 'Superadmin')){
+
+            $validate = $this->validate($request, [
+                'imagen' => 'image'
+            ]);
+            //recoger los datos
+            $id = $request->input('id');
+            $titulo = $request->input('titulo');
+            $imagen = $request->file('imagen');
+            $descripcionC = $request->input('descripcionC');
+            $descripcionL = $request->input('descripcionL');
+            $metadesc = $request->input('metadesc');
+            $metatitle = $request->input('metatitle');
+            $metakey = $request->input('metakey');
+            //cargo objeto de la BD
+            $categoria = categoria::find($id);
+            //recibir imagen
+            if ($imagen) {
+                //poner nombre unico
+                $imagen_name = time() . $imagen->getClientOriginalName();
+                //guardamos en la carpeta users de storage/app/users
+                Storage::disk('categorias')->put($imagen_name, File::get($imagen));
+                //seteo el objeto
+                $categoria->imagen = $imagen_name;
+            }
 
 
-        //seteo objeto
-        $user = \Auth::user();
-        $categoria->user_id = $user->id;
-        $categoria->titulo = $titulo;
-        $categoria->descripcionC = $descripcionC;
-        $categoria->descripcionL = $descripcionL;
-        $categoria->metadesc = $metadesc;
-        $categoria->metatitle = $metatitle;
-        $categoria->metakey = $metakey;
-        //guardar
-        $save = $categoria->update();
-        //redirigir
-        if ($save) {
-            return redirect()->route('categoria.gestion')->with([
-                        'message' => 'categoria guardada exitosamente'
-            ]);
-        } else {
-            return redirect()->route('categoria.gestion')->with([
-                        'message' => 'fallo al guardar categoria'
-            ]);
+            //seteo objeto
+            $user = \Auth::user();
+            $categoria->user_id = $user->id;
+            $categoria->titulo = $titulo;
+            $categoria->descripcionC = $descripcionC;
+            $categoria->descripcionL = $descripcionL;
+            $categoria->metadesc = $metadesc;
+            $categoria->metatitle = $metatitle;
+            $categoria->metakey = $metakey;
+            //guardar
+            $save = $categoria->update();
+            //redirigir
+            if ($save) {
+                return redirect()->route('categoria.gestion')->with([
+                            'message' => 'categoria guardada exitosamente'
+                ]);
+            } else {
+                return redirect()->route('categoria.gestion')->with([
+                            'message' => 'fallo al guardar categoria'
+                ]);
+            }
+        }else{
+            return redirect()->route('index');
         }
+
     }
 
     /**
@@ -228,17 +254,22 @@ class CategoriaController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {
-        $categoria = categoria::find($id);
-        //eliminar Storage
-        Storage::disk('categorias')->delete($categoria->imagen);
-        //eliminar registro
-        $save = $categoria->delete();
-        if ($save) {
-            $message = array('message' => 'categoria eliminada exitosamente');
-            return redirect()->route('categoria.gestion')->with($message);
-        } else {
-            $message = array('message' => 'fallo al borrar la categoria');
-            return redirect()->route('categoria.gestion')->with($message);
+        if(\Auth::user() && (\Auth::user()->role == 'editor' || \Auth::user()->role == 'socio' || \Auth::user()->role == 'admin' || \Auth::user()->role == 'Superadmin')){
+
+            $categoria = categoria::find($id);
+            //eliminar Storage
+            Storage::disk('categorias')->delete($categoria->imagen);
+            //eliminar registro
+            $save = $categoria->delete();
+            if ($save) {
+                $message = array('message' => 'categoria eliminada exitosamente');
+                return redirect()->route('categoria.gestion')->with($message);
+            } else {
+                $message = array('message' => 'fallo al borrar la categoria');
+                return redirect()->route('categoria.gestion')->with($message);
+            }
+        }else{
+            return redirect()->route('index');
         }
     }
 
